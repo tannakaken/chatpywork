@@ -8,11 +8,11 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='pychat',
+    name='chatpywork',
     version='1.0.0',
     descrption='python wrapper for ChatWork API v2',
     long_description=long_description,
-    url='https://github.com/tannakaken/pychat',
+    url='https://github.com/tannakaken/chatpywork',
     author='tannakaken',
     author_email='tannakaken@gmail.com',
     license='MIT',

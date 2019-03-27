@@ -1,4 +1,4 @@
-# pychat
+# chatpywork
 python wrapper for ChatWork API v2 
 
 プログラマ的にはSlackなどの方がフレンドリーですが、
@@ -25,7 +25,7 @@ chatworkのAPIは他にもたくさんありますが、事務で自動化した
 # Usage
 
 ```
-import pychat
+import chatpywork
 import datetime
 
 
@@ -35,7 +35,7 @@ api_key = 'abcdefghi123456789'
 account_id1 = 'Account Id1'
 account_id2 = 'Account Id2''
 
-room = pychat.Room(roomid, api_key)
+room = chatpywork.Room(roomid, api_key)
 
 room.send_message("hello", to={account_id1:"宛先ユーザー"})
 
