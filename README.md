@@ -22,7 +22,13 @@ pythonで事務作業を自動化したいと考える日本企業のcsvのタ�
 chatworkのAPIは他にもたくさんありますが、事務で自動化したいと思う案件が多いのは主に作成系であると思われるので、
 現状はそこに限ってます。
 
-# Usage
+## installation
+
+```
+pip install chatpywork
+```
+
+## Usage
 
 ```
 import chatpywork

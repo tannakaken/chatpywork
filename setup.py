@@ -9,8 +9,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='chatpywork',
-    version='1.0.0',
-    descrption='python wrapper for ChatWork API v2',
+    version='1.0.1',
+    description='python wrapper for ChatWork API v2',
     long_description=long_description,
     url='https://github.com/tannakaken/chatpywork',
     author='tannakaken',
