@@ -7,16 +7,21 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+def _requires_from_file(filename):
+    return open(filename).read().splitlines()
+
 setup(
     name='chatpywork',
-    version='1.0.1',
+    version='1.1.0',
     description='python wrapper for ChatWork API v2',
     long_description=long_description,
     url='https://github.com/tannakaken/chatpywork',
     author='tannakaken',
     author_email='tannakaken@gmail.com',
+    maintainer='tannakaken',
+    maintainer_email='tannakaken@gmail.com',
     license='MIT',
-    install_requires=['requests'],
+    install_requires=_requires_from_file('requirements.txt'),
     keywords='chatwork',
     packages=find_packages(),
     classifiers=[

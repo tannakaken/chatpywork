@@ -51,5 +51,7 @@ room.send_binaryfile("image.png","image/png", message-"画像です", to={accoun
 
 room.send_textfile("data.csv","text/csv", fromencode="utf-8", toencode="cp932", fromlinsep="\n", tolinesep="\r\n", message="収集したデータです", to={account_id1:"宛先ユーザー"})
 
+room.send_csv([["ID","名前","年齢"],[1,"山田太郎","24"],[2,"鈴木二郎","30"]], "sample.csv", encode="cp932", linsep="\r\n", message="収集したデータです", to={account_id1:"宛先ユーザー"})
+
 room.send_tesk("牛乳買って", [account_id1, account_id2], limit=datetime.datetime(2020, 4, 1)) 
 ```

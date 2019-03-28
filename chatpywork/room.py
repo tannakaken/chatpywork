@@ -1,16 +1,30 @@
+#!/usr/bin/env python
 """
+    file name: room.py
+    python wrapper for ChatWork API v2 
 """
+
+__author__ = "tannakaken"
+__email__ = "tannakaken@gmail.com"
+__credits__ = []
+__licence__ = "MIT"
+__mainteiner__ = "tannakaken"
+__status__ = "production"
+__version__ = "1.1.0"
+__date__ = "2020-03-27"
 
 import requests
 import os
 import os.path
 import calendar
+import csv
+import io
 
 BASE_URL = 'https://api.chatwork.com/v2'
 
 class Room:
     """
-    chatworkのチャットにメッセージを投稿するためのクラス
+    chatworkのチャットルームに投稿するためのクラス
     """
     def __init__(self, roomid, apikey):
         """初期化する。
@@ -85,7 +99,7 @@ class Room:
         filename :str
             添付ファイル名
         mimetype :str
-            ファイルのマイムタイプ
+            ファイルのmedia type
         message :str
             添付ファイルに付加するメッセージ
         to :dictionary
@@ -139,8 +153,7 @@ class Room:
         filepath :str
             送信するファイルのパス
         mimetype :str
-            ファイルのマイムタイプ
-        
+            ファイルのmedia type
         fromencoding :str
             ローカルファイルのエンコード名。デフォルトはUTF-8
         toencoding :str
@@ -169,6 +182,40 @@ class Room:
                 data= data.replace(fromlinesep, tolinesep)
             data = data.encode(toencoding)
         return self.send_data(data, filename, mimetype, message=message, to=to)
+
+    def send_csv(self, csvarray, filename, delimiter=',', quotechar='"', linesep='\n', quoting=csv.QUOTE_MINIMAL, encode='utf-8', message="", to={}):
+        """配列をcsvにして送信する
+        
+        Parameters
+        ----------
+        csvarrat :array
+            csvにする二重配列
+        delimiter :str
+            csvの区切り。デフォルトはコンマ
+        quotechar :str
+            csvの引用符。デフォルトは二重引用符
+        linesep :str
+            csvの改行コード。デフォルトはLF
+        quoting :int
+            csvのクオート方法を、csvのQUOTE_*定数で指定する。デフォルトはcsv.QUOTE_MINIMAL（必要な時だけクオートする）
+        encode :str
+            csvの文字コード。デフォルトはUTF-8
+        message :str
+            添付csvに付加するメッセージ
+        to :dictionary
+            投稿の宛先。Account Idとアカウントの名前の辞書
+        
+        Returns
+        ----------
+        requests.Response
+            requests.postの戻り値
+        """
+        f = io.StringIO("")
+        writer = csv.writer(f, delimiter=delimiter, quotechar=quotechar, lineterminator=linesep, quoting=quoting)
+        writer.writerows(csvarray)
+        f.seek(0)
+        data = f.read().encode(encode)
+        return self.send_data(data, filename, 'text/csv', message=message, to=to)
 
     def send_task(self, task, to_ids, limit=None):
         """新しいタスクを作成する
