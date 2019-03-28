@@ -53,5 +53,22 @@ room.send_textfile("data.csv","text/csv", fromencode="utf-8", toencode="cp932", 
 
 room.send_csv([["ID","名前","年齢"],[1,"山田太郎","24"],[2,"鈴木二郎","30"]], "sample.csv", encode="cp932", linsep="\r\n", message="収集したデータです", to={account_id1:"宛先ユーザー"})
 
+room.send_data_from_url("http://example.com/image.png", headers={X-token:"some secret tpken"}, params={"q":"query"}, message="webで手に入れた画像です。", to={account_id1:"宛先ユーザー"})
+
 room.send_tesk("牛乳買って", [account_id1, account_id2], limit=datetime.datetime(2020, 4, 1)) 
 ```
+
+公式ドキュメントにはファイルのサイズの上限は5MBとありますが、
+どうやらHTTPリクエストのボディ全体のサイズの上限が10MBのようで、それを超えなければ、アップロードできます。
+
+データのダウンロード時のエラー、およびファイルの容量オーバーなどは、できる限りChatworkに送信しますが、
+それも動かなければ、全てのメソッドがrequests.postのレスポンスのオブジェクトを返すので、それを使ってデバッグしてください。
+
+ChatworkのAPIの使用制限は今の所５分間あたり300回です。
+当たり前ですが、これを超えるとChatworkにはエラーの通知できませんので、
+メソッドの戻り値に含まれるHTTPレスポンスのヘッダーに記載されたAPI使用の残り回数や、
+429 Too Many Requestsなどを検知して、他のエラー通知の方法を試みてください。
+
+# Author
+淡中☆圏 \<tannakaken@gmail.com\>
+Twitter: @tannakaken

@@ -10,7 +10,7 @@ __credits__ = []
 __licence__ = "MIT"
 __mainteiner__ = "tannakaken"
 __status__ = "production"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __date__ = "2020-03-27"
 
 from chatpywork.room import Room

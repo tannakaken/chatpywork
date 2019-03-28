@@ -10,7 +10,7 @@ __credits__ = []
 __licence__ = "MIT"
 __mainteiner__ = "tannakaken"
 __status__ = "production"
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __date__ = "2020-03-27"
 
 import requests
@@ -20,7 +20,17 @@ import calendar
 import csv
 import io
 
+# Chatwork API v2のURL
+# http://developer.chatwork.com/ja/index.html
 BASE_URL = 'https://api.chatwork.com/v2'
+
+# アップロードファイルの上限
+# http://developer.chatwork.com/ja/endpoint_rooms.html#POST-rooms-room_id-files
+# 上記ドキュメントには5MBと書いてあるが、APIのレスポンスによれば、requestのcontentの上限が10MBであるようだ。
+# 実際、10MB以下のファイルをアップロードすることの動作確認もできる。
+# しかし、メッセージなども含めると、ファイル自体は10MB以下でも全体で10MBを超えることもありうるので、
+# APIからのresponseのstatus codeが413になっていないかの確認は必要である。
+FILE_LIMIT = 10485760
 
 class Room:
     """
@@ -95,14 +105,14 @@ class Room:
         Parameters
         ----------
         filepath :bites
-            送信するデータ
+            送信するデータ。10MBが上限。
         filename :str
             添付ファイル名
         mimetype :str
             ファイルのmedia type
         message :str
             添付ファイルに付加するメッセージ
-        to :dictionary
+        to :dict
             投稿の宛先。Account Idとアカウントの名前の辞書
         
         Returns
@@ -110,6 +120,8 @@ class Room:
         requests.Response
             requests.postの戻り値
         """
+        if len(data) > FILE_LIMIT:
+            return self.send_message("容量オーバー:アップロードするデータが大きすぎます", to=to)
         headers = {'X-ChatWorkToken': self.apikey}
         post_url = '{}/rooms/{}/files'.format(BASE_URL, self.roomid)
         message = self._to(message, to)
@@ -117,7 +129,10 @@ class Room:
             files = {'file': (filename, data, mimetype), 'message':message}
         else:
             files = {'file': (filename, data, mimetype)}
-        return requests.post(post_url, headers=headers, files=files)
+        response = requests.post(post_url, headers=headers, files=files)
+        if response.status_code == 413:
+            return self.send_message("容量オーバー:アップロードするデータが大きすぎました", to=to)
+        return response
 
 
     def send_binaryfile(self, filepath, mimetype, message="", to={}):
@@ -126,7 +141,7 @@ class Room:
         Parameters
         ----------
         filepath :str
-            送信するファイルのパス
+            送信するファイルのパス。メッセージと合わせて10MBが上限。
         mimetype :str
             ファイルのマイムタイプ
         message :str
@@ -151,7 +166,7 @@ class Room:
         Parameters
         ----------
         filepath :str
-            送信するファイルのパス
+            送信するファイルのパス。メッセージと合わせて10MBが上限。
         mimetype :str
             ファイルのmedia type
         fromencoding :str
@@ -189,7 +204,7 @@ class Room:
         Parameters
         ----------
         csvarrat :array
-            csvにする二重配列
+            csvにする二重配列。csvにした時にメッセージと合わせて10MBが上限。
         delimiter :str
             csvの区切り。デフォルトはコンマ
         quotechar :str
@@ -216,6 +231,57 @@ class Room:
         f.seek(0)
         data = f.read().encode(encode)
         return self.send_data(data, filename, 'text/csv', message=message, to=to)
+
+    def send_data_from_url(self, url, params={}, headers={}, message='', to={}):
+        """URLからデータを取得してを送信する
+        
+        Parameters
+        ----------
+        url :str
+            データのURL。メッセージと合わせて10MBが上限。
+        params: dictionary
+            httpリクエストのクエリ・パラメータ
+        headers: dictionary
+            httpリクエストのヘッダー
+        message :str
+            添付ファイルに付加するメッセージ
+        to :dictionary
+            投稿の宛先。Account Idとアカウントの名前の辞書
+        Returns
+        ----------
+        requests.Response
+            requests.postの戻り値
+        """
+        try:
+            response = requests.get(url, params=params, headers=headers)
+        except ConnectionError:
+            message = "接続エラー: " + url + " からデータの取得中に接続エラーが発生しました。"
+            return self.send_message(message, to=to)
+        except HTTPError:
+            message = "HTTPエラー: " + url + " からデータの取得中に不正なHTTPレスポンスがありました。"
+            return self.send_message(message, to=to)
+        except Timeout:
+            message = "タイムアウト: " + url + " からデータの取得中にタイムアウトが発生しました。"
+            return self.send_message(message, to=to)
+        except TooManyRedirects:
+            message = "リダイレクト超過: " + url + " からデータの取得中にリダイレクトが最大数を超過しました。"
+            return self.send_message(message, to=to)
+        if response.status_code != requests.codes.ok:
+            if response.status_code == 400:
+                message = "400 Bad Request: " + url + " へ不正なリクエストが行われました。"
+            elif response.status_code == 401:
+                message = "401 Unauthorized: " + url + "へのリクエストは必要な認証が行われませんでした。"
+            elif response.status_code == 403:
+                message = "403 Forbidden: " + url + " へのリクエストは禁止されています。"
+            elif response.status_code == 404:
+                message = "404 Not Found: " + url + " が見つかりませんでした。"
+            else:
+                message = response.status_code + ":" + url + " へのリクエストがOKではないステータスを返しました。"
+            return self.send_message(message, to=to)
+        data = response.content
+        filename = os.path.basename(url)
+        mimetype = response.headers['Content-Type']
+        return self.send_data(data, filename, mimetype, message=message, to=to)
 
     def send_task(self, task, to_ids, limit=None):
         """新しいタスクを作成する
