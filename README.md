@@ -30,18 +30,27 @@ pip install chatpywork
 
 ## Usage
 
+送信に必要なroom\_idは
+  https://www.chatwork.com/#!rid123456789
+のridの後の数字を使う（ridは含まない）。
+
+api\_keyは、
+ChatWorkのページの右上のアカウントの名前をクリックして出てくるアコーディオンの中にある
+[API設定](https://www.chatwork.com/service/packages/chatwork/subpackages/api/token.php)
+をクリックして飛んだページで取得できる。
+
 ```
 import chatpywork
 import datetime
 
 
-roomid = '123456789'
+room_id = '123456789'
 api_key = 'abcdefghi123456789'
 
 account_id1 = 'Account Id1'
 account_id2 = 'Account Id2''
 
-room = chatpywork.Room(roomid, api_key)
+room = chatpywork.Room(room_id, api_key)
 
 room.send_message("hello", to={account_id1:"宛先ユーザー"})
 
@@ -53,7 +62,7 @@ room.send_textfile("data.csv","text/csv", fromencode="utf-8", toencode="cp932", 
 
 room.send_csv([["ID","名前","年齢"],[1,"山田太郎","24"],[2,"鈴木二郎","30"]], "sample.csv", encode="cp932", linsep="\r\n", message="収集したデータです", to={account_id1:"宛先ユーザー"})
 
-room.send_data_from_url("http://example.com/image.png", headers={X-token:"some secret tpken"}, params={"q":"query"}, message="webで手に入れた画像です。", to={account_id1:"宛先ユーザー"})
+room.send_data_from_url("http://example.com/image.png", headers={"X-token":"some secret tpken"}, params={"q":"query"}, message="webで手に入れた画像です。", to={account_id1:"宛先ユーザー"})
 
 room.send_tesk("牛乳買って", [account_id1, account_id2], limit=datetime.datetime(2020, 4, 1)) 
 ```
