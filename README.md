@@ -56,7 +56,7 @@ room.send_message("hello", to={account_id1:"宛先ユーザー"})
 
 room.send_data(binarydata, "image.jpg", "image/jpeg", message="画像です", to={account_id1:"宛先ユーザー"})
 
-room.send_binaryfile("image.png","image/png", message-"画像です", to={account_id1:"宛先ユーザー")
+room.send_binaryfile("image.png","image/png", message="画像です", to={account_id1:"宛先ユーザー")
 
 room.send_textfile("data.csv","text/csv", fromencode="utf-8", toencode="cp932", fromlinsep="\n", tolinesep="\r\n", message="収集したデータです", to={account_id1:"宛先ユーザー"})
 
@@ -64,7 +64,7 @@ room.send_csv([["ID","名前","年齢"],[1,"山田太郎","24"],[2,"鈴木二郎
 
 room.send_data_from_url("http://example.com/image.png", headers={"X-token":"some secret tpken"}, params={"q":"query"}, message="webで手に入れた画像です。", to={account_id1:"宛先ユーザー"})
 
-room.send_tesk("牛乳買って", [account_id1, account_id2], limit=datetime.datetime(2020, 4, 1)) 
+room.send_task("牛乳買って", [account_id1, account_id2], limit=datetime.datetime(2020, 4, 1)) 
 ```
 
 公式ドキュメントにはファイルのサイズの上限は5MBとありますが、
