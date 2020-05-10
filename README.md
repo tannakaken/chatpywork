@@ -80,6 +80,12 @@ ChatWorkのAPIの使用制限は今の所５分間あたり300回です。
 メソッドの戻り値に含まれるHTTPレスポンスのヘッダーに記載されたAPI使用の残り回数や、
 429 Too Many Requestsなどを検知して、他のエラー通知の方法を試みてください。
 
+# Example
+
+Amazon CloudWatch EventsとLambdaを使って業務の最初と最後に簡単な提携メッセージをchatworkに送るボット
+
+(workstartendbot)[https://github.com/tannakaken/workstartendbot]
+
 # Author
 淡中☆圏 \<tannakaken@gmail.com\>
 
