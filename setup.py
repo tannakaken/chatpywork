@@ -12,8 +12,9 @@ def _requires_from_file(filename):
 
 setup(
     name='chatpywork',
-    version='1.2.0',
+    version='1.3.0',
     description='python wrapper for ChatWork API v2',
+    long_description_content_type='text/markdown',
     long_description=long_description,
     url='https://github.com/tannakaken/chatpywork',
     author='tannakaken',

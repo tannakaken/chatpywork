@@ -54,6 +54,8 @@ room = chatpywork.Room(room_id, api_key)
 
 room.send_message("hello", to={account_id1:"宛先ユーザー"})
 
+room.send_message("hello everyone", toall=True)
+
 room.send_data(binarydata, "image.jpg", "image/jpeg", message="画像です", to={account_id1:"宛先ユーザー"})
 
 room.send_binaryfile("image.png","image/png", message="画像です", to={account_id1:"宛先ユーザー")

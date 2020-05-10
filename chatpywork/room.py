@@ -51,7 +51,7 @@ class Room:
         self.roomid = roomid
         self.apikey = apikey
 
-    def _to(self, message, to):
+    def _to(self, message, to, toall):
         """メッセージに宛先を付加する
         
         Parameters
@@ -60,25 +60,31 @@ class Room:
             メッセージ本文
         to :dictionary
             投稿の宛先。Account Idとアカウントの名前の辞書
+        toall :bool
+            チャンネルの全員に向けて投稿するかどうか
         
         Returns
         ----------
         str
             宛先が付加されたメッセージ
         >>> room = Room("","")
-        >>> room._to("message", {})
+        >>> room._to("message", {}, False)
         'message'
-        >>> room._to("spam", {"42":"グレアム・チャップマン"})
+        >>> room._to("message", {}, True)
+        '[toall]\\nmessage'
+        >>> room._to("spam", {"42":"グレアム・チャップマン"}, False)
         '[To:42] グレアム・チャップマンさん\\nspam'
-        >>> room._to("egg and spam", {"42":"グレアム・チャップマン","48":"テリー・ジョーンズ"})
+        >>> room._to("egg and spam", {"42":"グレアム・チャップマン","48":"テリー・ジョーンズ"}, False)
         '[To:42] グレアム・チャップマンさん\\n[To:48] テリー・ジョーンズさん\\negg and spam'
         """
         result = ''
+        if toall:
+            result += "[toall]\n"
         for chatworkid, name in to.items():
             result += "[To:{}] {}さん\n".format(chatworkid,name)
         return result + message
 
-    def send_message(self, message, to={}):
+    def send_message(self, message, to={}, toall=False):
         """メッセージを送信する。
 
         Parameters
@@ -87,6 +93,8 @@ class Room:
             送信するメッセージ
         to :dictionary
             投稿の宛先。Account Idとアカウントの名前の辞書
+        toall :bool
+            チャンネルの全員に向けて投稿するかどうか
 
         Returns
         ----------
@@ -96,10 +104,10 @@ class Room:
         post_url='{}/rooms/{}/messages'.format(BASE_URL, self.roomid)
 
         headers = {'X-ChatWorkToken': self.apikey}
-        params = {'body': self._to(message, to)}
+        params = {'body': self._to(message, to, toall)}
         return requests.post(post_url, headers=headers, data=params)
 
-    def send_data(self, data, filename, mimetype, message="", to={}):
+    def send_data(self, data, filename, mimetype, message="", to={}, toall=False):
         """データを添付ファイルとして送信する
         
         Parameters
@@ -114,6 +122,8 @@ class Room:
             添付ファイルに付加するメッセージ
         to :dict
             投稿の宛先。Account Idとアカウントの名前の辞書
+        toall :bool
+            チャンネルの全員に向けて投稿するかどうか
         
         Returns
         ----------
@@ -121,21 +131,21 @@ class Room:
             requests.postの戻り値
         """
         if len(data) > FILE_LIMIT:
-            return self.send_message("容量オーバー:アップロードするデータが大きすぎます", to=to)
+            return self.send_message("容量オーバー:アップロードするデータが大きすぎます", to=to, toall=toall)
         headers = {'X-ChatWorkToken': self.apikey}
         post_url = '{}/rooms/{}/files'.format(BASE_URL, self.roomid)
-        message = self._to(message, to)
+        message = self._to(message, to, toall)
         if str:
             files = {'file': (filename, data, mimetype), 'message':message}
         else:
             files = {'file': (filename, data, mimetype)}
         response = requests.post(post_url, headers=headers, files=files)
         if response.status_code == 413:
-            return self.send_message("容量オーバー:アップロードするデータが大きすぎました", to=to)
+            return self.send_message("容量オーバー:アップロードするデータが大きすぎました", to=to, toall=toall)
         return response
 
 
-    def send_binaryfile(self, filepath, mimetype, message="", to={}):
+    def send_binaryfile(self, filepath, mimetype, message="", to={}, toall=False):
         """バイナリファイルを送信する
         
         Parameters
@@ -148,6 +158,8 @@ class Room:
             添付ファイルに付加するメッセージ
         to :dictionary
             投稿の宛先。Account Idとアカウントの名前の辞書
+        toall :bool
+            チャンネルの全員に向けて投稿するかどうか
         
         Returns
         ----------
@@ -157,10 +169,10 @@ class Room:
         filename = os.path.basename(filepath)
         with open(filepath, 'rb') as f:
             data = f.read()
-        return self.send_data(data, filename, mimetype, message=message, to=to)
+        return self.send_data(data, filename, mimetype, message=message, to=to, toall=toall)
 
 
-    def send_textfile(self, filepath, mimetype, fromencoding='utf-8', toencoding='utf-8', fromlinesep=None, tolinesep=None, message="", to={}):
+    def send_textfile(self, filepath, mimetype, fromencoding='utf-8', toencoding='utf-8', fromlinesep=None, tolinesep=None, message="", to={}, toall=False):
         """文字列ファイルを送信する
         
         Parameters
@@ -181,6 +193,9 @@ class Room:
             添付ファイルに付加するメッセージ
         to :dictionary
             投稿の宛先。Account Idとアカウントの名前の辞書
+        toall :bool
+            チャンネルの全員に向けて投稿するかどうか
+
         Returns
         ----------
         requests.Response
@@ -196,9 +211,9 @@ class Room:
             if tolinesep != fromlinesep:
                 data= data.replace(fromlinesep, tolinesep)
             data = data.encode(toencoding)
-        return self.send_data(data, filename, mimetype, message=message, to=to)
+        return self.send_data(data, filename, mimetype, message=message, to=to, toall=toall)
 
-    def send_csv(self, csvarray, filename, delimiter=',', quotechar='"', linesep='\n', quoting=csv.QUOTE_MINIMAL, encode='utf-8', message="", to={}):
+    def send_csv(self, csvarray, filename, delimiter=',', quotechar='"', linesep='\n', quoting=csv.QUOTE_MINIMAL, encode='utf-8', message="", to={}, toall=False):
         """配列をcsvにして送信する
         
         Parameters
@@ -219,6 +234,8 @@ class Room:
             添付csvに付加するメッセージ
         to :dictionary
             投稿の宛先。Account Idとアカウントの名前の辞書
+        toall :bool
+            チャンネルの全員に向けて投稿するかどうか
         
         Returns
         ----------
@@ -230,9 +247,9 @@ class Room:
         writer.writerows(csvarray)
         f.seek(0)
         data = f.read().encode(encode)
-        return self.send_data(data, filename, 'text/csv', message=message, to=to)
+        return self.send_data(data, filename, 'text/csv', message=message, to=to, toall=toall)
 
-    def send_data_from_url(self, url, params={}, headers={}, message='', to={}):
+    def send_data_from_url(self, url, params={}, headers={}, message='', to={}, toall=False):
         """URLからデータを取得してを送信する
         
         Parameters
@@ -247,6 +264,9 @@ class Room:
             添付ファイルに付加するメッセージ
         to :dictionary
             投稿の宛先。Account Idとアカウントの名前の辞書
+        toall :bool
+            チャンネルの全員に向けて投稿するかどうか
+
         Returns
         ----------
         requests.Response
@@ -256,16 +276,16 @@ class Room:
             response = requests.get(url, params=params, headers=headers)
         except ConnectionError:
             message = "接続エラー: " + url + " からデータの取得中に接続エラーが発生しました。"
-            return self.send_message(message, to=to)
+            return self.send_message(message, to=to, toall=toall)
         except HTTPError:
             message = "HTTPエラー: " + url + " からデータの取得中に不正なHTTPレスポンスがありました。"
-            return self.send_message(message, to=to)
+            return self.send_message(message, to=to, toall=toall)
         except Timeout:
             message = "タイムアウト: " + url + " からデータの取得中にタイムアウトが発生しました。"
-            return self.send_message(message, to=to)
+            return self.send_message(message, to=to, toall=toall)
         except TooManyRedirects:
             message = "リダイレクト超過: " + url + " からデータの取得中にリダイレクトが最大数を超過しました。"
-            return self.send_message(message, to=to)
+            return self.send_message(message, to=to, toall=toall)
         if response.status_code != requests.codes.ok:
             if response.status_code == 400:
                 message = "400 Bad Request: " + url + " へ不正なリクエストが行われました。"
@@ -277,11 +297,11 @@ class Room:
                 message = "404 Not Found: " + url + " が見つかりませんでした。"
             else:
                 message = response.status_code + ":" + url + " へのリクエストがOKではないステータスを返しました。"
-            return self.send_message(message, to=to)
+            return self.send_message(message, to=to, toall=toall)
         data = response.content
         filename = os.path.basename(url)
         mimetype = response.headers['Content-Type']
-        return self.send_data(data, filename, mimetype, message=message, to=to)
+        return self.send_data(data, filename, mimetype, message=message, to=to, toall=toall)
 
     def send_task(self, task, to_ids, limit=None):
         """新しいタスクを作成する
