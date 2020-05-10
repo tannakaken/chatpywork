@@ -84,7 +84,7 @@ ChatWorkのAPIの使用制限は今の所５分間あたり300回です。
 
 Amazon CloudWatch EventsとLambdaを使って業務の最初と最後に簡単な提携メッセージをchatworkに送るボット
 
-(workstartendbot)[https://github.com/tannakaken/workstartendbot]
+[workstartendbot](https://github.com/tannakaken/workstartendbot)
 
 # Author
 淡中☆圏 \<tannakaken@gmail.com\>
