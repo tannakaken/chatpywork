@@ -58,7 +58,7 @@ room.send_message("hello everyone", toall=True)
 
 room.send_data(binarydata, "image.jpg", "image/jpeg", message="画像です", to={account_id1:"宛先ユーザー"})
 
-room.send_binaryfile("image.png","image/png", message="画像です", to={account_id1:"宛先ユーザー")
+room.send_binaryfile("image.png","image/png", message="画像です", to={account_id1:"宛先ユーザー"})
 
 room.send_textfile("data.csv","text/csv", fromencode="utf-8", toencode="cp932", fromlinsep="\n", tolinesep="\r\n", message="収集したデータです", to={account_id1:"宛先ユーザー"})
 
